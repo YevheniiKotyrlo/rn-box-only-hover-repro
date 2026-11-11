@@ -1,79 +1,14 @@
-# rn-box-only-hover-repro
+# Android: hover never reaches a `box-only` View or the content of a `ScrollView` with `scrollEnabled={false}`
 
 ![Build](https://github.com/YevheniiKotyrlo/rn-box-only-hover-repro/workflows/Pre%20Merge%20Checks/badge.svg)
 
-This is your new React Native Reproducer project.
+React Native 0.90.0-nightly-20261111-1273ca128, from the [React Native reproducer template](https://github.com/react-native-community/reproducer-react-native). `App.tsx` renders three accessible Views: one with the default `pointerEvents`, one with `pointerEvents="box-only"`, and one inside a `ScrollView` with `scrollEnabled={false}`.
 
-# Reproducer TODO list
+## Steps
 
-- [x] 1. Create a new reproducer project.
-- [ ] 2. Git clone your repository locally.
-- [ ] 3. Edit the project to reproduce the failure you're seeing.
-- [ ] 4. Push your changes, so that Github Actions can run the CI.
-- [ ] 5. Make sure the repository is public and share the link with the issue you reported.
+By hand, on an Android device:
 
-# How to use this Reproducer
+1. Build and install the release APK: `cd ReproducerApp/android && ./gradlew assembleRelease && adb install -r app/build/outputs/apk/release/app-release.apk`.
+2. Open the app, run `adb shell uiautomator events`, and hover a mouse or a stylus over each View, above its label: the label is a Text that sends hover events of its own. `TYPE_VIEW_HOVER_ENTER` comes from `auto View` only.
 
-This project has been created with `npx @react-native-community/cli init` and is a vanilla React Native app.
-
-> [!IMPORTANT]  
-> Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/set-up-your-environment) so that you have a working environment locally.
-
-## Step 1: Start the Metro Server
-
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
-
-To start Metro, run the following command from the _root_ of your React Native project:
-
-```bash
-# using npm
-npm start
-
-# OR using Yarn
-yarn start
-```
-
-## Step 2: Start your Application
-
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
-
-### For Android
-
-```bash
-# using npm
-npm run android
-
-# OR using Yarn
-yarn android
-```
-
-### For iOS
-
-First, make sure you install dependencies with:
-
-```bash
-cd ios && bundle install && bundle exec pod install
-```
-
-Then you can run the iOS app with:
-
-```bash
-# using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
-
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
-
-## Step 3: Modifying your App
-
-Now that you have successfully run the app, let's modify it.
-
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
-
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
+Scripted: `./reproduce.sh`, with one Android 11 or newer device attached, builds and installs the app, hovers a stylus registered through the device's `uinput` over each View above its label, and reads `uiautomator events`. It exits 1 while the hover reaches the `auto View` but not the other two, 0 once each sends `TYPE_VIEW_HOVER_ENTER`, and 2 when a step fails.
